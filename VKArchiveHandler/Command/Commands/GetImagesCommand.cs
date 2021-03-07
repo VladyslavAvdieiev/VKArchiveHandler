@@ -8,8 +8,8 @@ using System.Text.RegularExpressions;
 
 namespace Command.Commands {
     public class GetImagesCommand : ICommand {
-        public event Action<string> OnLog;
-        public event Action<string> OnErrorLog;
+        public event Action<CommandEventArgs> OnLog;
+        public event Action<CommandEventArgs> OnErrorLog;
 
         private static readonly string imagePattern = "//sun";
         private static readonly string urlGroupName = "url";
@@ -28,15 +28,16 @@ namespace Command.Commands {
             if (!Directory.Exists(outputFolder)) {
                 Directory.CreateDirectory(outputFolder);
             }
+            OnLog?.Invoke(new CommandEventArgs($"{urls.Distinct().Count()} unique images remaining", null));
             foreach (var url in urls) {
                 var imageName = GetImageFullName(url);
                 try {
                     client.DownloadFile(new Uri(url), Path.Combine(outputFolder, imageName));
                 } catch (Exception) {
-                    OnErrorLog?.Invoke(url);
+                    OnErrorLog?.Invoke(new CommandEventArgs($"ERR: {imageName}", url));
                     continue;
                 }
-                OnLog?.Invoke(url);
+                OnLog?.Invoke(new CommandEventArgs($"OK:  {imageName}", url));
             }
         }
 

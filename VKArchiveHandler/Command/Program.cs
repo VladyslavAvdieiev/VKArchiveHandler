@@ -12,20 +12,28 @@ namespace Command {
 
             var errorUrls = new List<string>();
             var iCommand = container.Resolve<ICommand>(new NamedParameter("Command", arguments.Command));
-            iCommand.OnLog += url => {
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine($"OK:  {url}");
+            iCommand.OnLog += args => {
+                Console.WriteLine(args.Message);
             };
-            iCommand.OnErrorLog += url => {
+            iCommand.OnErrorLog += args => {
                 Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"ERR: {url}");
+                Console.WriteLine(args.Message);
+                Console.ForegroundColor = ConsoleColor.Gray;
             };
-            iCommand.OnErrorLog += url => errorUrls.Add(url);
+            iCommand.OnErrorLog += args => errorUrls.Add(args.Url);
 
             iCommand.Execute(arguments);
 
-            if (errorUrls.Count > 0) {
-
+            if (errorUrls.Count == 0) {
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine("################");
+                Console.WriteLine("0 errors occured");
+                Console.WriteLine("################");
+            } else {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"################");
+                Console.WriteLine($"{errorUrls.Count} errors occured.");
+                Console.WriteLine($"################");
             }
             Console.ReadLine();
         }
